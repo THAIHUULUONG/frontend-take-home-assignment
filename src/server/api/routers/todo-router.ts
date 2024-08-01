@@ -1,10 +1,10 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-import { procedure } from '@/server/trpc/procedures'
-import { router } from '@/server/trpc/router'
+import { procedure } from "@/server/trpc/procedures";
+import { router } from "@/server/trpc/router";
 
-import { TodoSchema, TodoStatusSchema } from '../schemas/todo-schemas'
-import { latestTodoStatusId } from '../db-views/latest-todo-status-id'
+import { TodoSchema, TodoStatusSchema } from "../schemas/todo-schemas";
+import { latestTodoStatusId } from "../db-views/latest-todo-status-id";
 
 export const todoRouter = router({
   getAll: procedure
@@ -16,23 +16,23 @@ export const todoRouter = router({
     .query(async ({ ctx, input }) => {
       return ctx.db.connection().execute(async (conn) =>
         conn
-          .selectFrom('todos')
+          .selectFrom("todos")
           .innerJoin(
-            latestTodoStatusId(conn).as('latestTodoStatusId'),
-            'latestTodoStatusId.todoId',
-            'todos.id'
+            latestTodoStatusId(conn).as("latestTodoStatusId"),
+            "latestTodoStatusId.todoId",
+            "todos.id"
           )
-          .innerJoin('todoStatuses', 'todoStatuses.id', 'latestTodoStatusId')
-          .where('todoStatuses.status', 'in', input.statuses)
+          .innerJoin("todoStatuses", "todoStatuses.id", "latestTodoStatusId")
+          .where("todoStatuses.status", "in", input.statuses)
           .select([
-            'todos.id', //
-            'todos.body',
-            'todoStatuses.status',
+            "todos.id", //
+            "todos.body",
+            "todoStatuses.status",
           ])
-          .orderBy('latestTodoStatusId', 'desc')
+          .orderBy("latestTodoStatusId", "desc")
           .execute()
           .then(z.array(TodoSchema).parse)
-      )
+      );
     }),
 
   create: procedure
@@ -40,21 +40,21 @@ export const todoRouter = router({
     .mutation(async ({ ctx, input }) => {
       return ctx.db.transaction().execute(async (t) => {
         const { id: newTodoId } = await t
-          .insertInto('todos')
+          .insertInto("todos")
           .values({ body: input.body })
-          .returning('todos.id')
-          .executeTakeFirstOrThrow()
+          .returning("todos.id")
+          .executeTakeFirstOrThrow();
 
         await t
-          .insertInto('todoStatuses')
+          .insertInto("todoStatuses")
           .values({
             todoId: newTodoId,
-            status: TodoStatusSchema.Values['pending'],
+            status: TodoStatusSchema.Values["pending"],
           })
-          .execute()
+          .execute();
 
-        return newTodoId
-      })
+        return newTodoId;
+      });
     }),
 
   delete: procedure
@@ -63,7 +63,7 @@ export const todoRouter = router({
       await ctx.db
         .transaction()
         .execute((t) =>
-          t.deleteFrom('todos').where('todos.id', '=', input.id).execute()
-        )
+          t.deleteFrom("todos").where("todos.id", "=", input.id).execute()
+        );
     }),
-})
+});

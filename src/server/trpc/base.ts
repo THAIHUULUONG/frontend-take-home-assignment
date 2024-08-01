@@ -1,12 +1,12 @@
-import { initTRPC } from '@trpc/server'
-import { ZodError } from 'zod'
-import superjson from 'superjson'
+import { initTRPC } from "@trpc/server";
+import { ZodError } from "zod";
+import superjson from "superjson";
 
-import { db } from '../db'
+import { db } from "../db";
 
 type Session = {
-  userId: number
-}
+  userId: number;
+};
 
 export const t = initTRPC.context<typeof createInnerTRPCContext>().create({
   transformer: superjson,
@@ -18,9 +18,9 @@ export const t = initTRPC.context<typeof createInnerTRPCContext>().create({
         zodError:
           error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
-    }
+    };
   },
-})
+});
 
 /**
  * This helper generates the "internals" for a tRPC context.
@@ -34,5 +34,5 @@ export const createInnerTRPCContext = (opts: { session?: Session }) => {
   return {
     session: opts.session,
     db,
-  }
-}
+  };
+};

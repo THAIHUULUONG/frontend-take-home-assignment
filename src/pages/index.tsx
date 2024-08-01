@@ -1,5 +1,5 @@
-import { CreateTodoForm } from '@/client/components/CreateTodoForm'
-import { TodoList } from '@/client/components/TodoList'
+import { CreateTodoForm } from "@/client/components/CreateTodoForm";
+import { TodoList } from "@/client/components/TodoList";
 
 /**
  * QUESTION 6:
@@ -33,7 +33,7 @@ const Index = () => {
         </div>
       </div>
     </main>
-  )
-}
+  );
+};
 
-export default Index
+export default Index;

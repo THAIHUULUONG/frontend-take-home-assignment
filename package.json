@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@formkit/auto-animate": "0.7.0",
-    "@prisma/client": "4.14.0",
+    "@prisma/client": "^5.17.0",
     "@radix-ui/react-checkbox": "1.0.4",
     "@radix-ui/react-tabs": "1.0.4",
     "@t3-oss/env-nextjs": "0.3.1",
@@ -52,7 +52,7 @@
     "postcss": "8.4.21",
     "prettier": "2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8",
-    "prisma": "4.14.0",
+    "prisma": "^5.17.0",
     "prisma-kysely": "1.5.0",
     "sql-formatter": "12.2.3",
     "tailwindcss": "3.3.0",

@@ -1,3 +1,3 @@
-import { t } from './base'
+import { t } from "./base";
 
-export const router = t.router
+export const router = t.router;

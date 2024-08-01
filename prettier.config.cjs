@@ -2,8 +2,8 @@
 const config = {
   semi: false,
   singleQuote: true,
-  quoteProps: 'consistent',
-  plugins: [require.resolve('prettier-plugin-tailwindcss')],
-}
+  quoteProps: "consistent",
+  plugins: [require.resolve("prettier-plugin-tailwindcss")],
+};
 
-module.exports = config
+module.exports = config;

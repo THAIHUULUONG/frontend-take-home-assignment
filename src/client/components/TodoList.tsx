@@ -1,8 +1,10 @@
-import type { SVGProps } from 'react'
+import type { SVGProps } from "react";
 
-import * as Checkbox from '@radix-ui/react-checkbox'
+import { useState } from "react";
+import * as Checkbox from "@radix-ui/react-checkbox";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
-import { api } from '@/utils/client/api'
+import { api } from "@/utils/client/api";
 
 /**
  * QUESTION 3:
@@ -63,34 +65,119 @@ import { api } from '@/utils/client/api'
  *  - https://auto-animate.formkit.com
  */
 
+type TodoStatus = "completed" | "pending";
+
 export const TodoList = () => {
-  const { data: todos = [] } = api.todo.getAll.useQuery({
-    statuses: ['completed', 'pending'],
-  })
+  const [filter, setFilter] = useState<"all" | TodoStatus>("all");
+  const [parent] = useAutoAnimate<HTMLUListElement>(); // Khai báo hook auto-animate
+
+  const { data: todos = [], refetch } = api.todo.getAll.useQuery({
+    statuses: filter === "all" ? ["completed", "pending"] : [filter],
+  });
+
+  const updateTodoStatus = api.todoStatus.update.useMutation({
+    onSuccess: () => refetch(),
+  });
+
+  const deleteTodo = api.todo.delete.useMutation({
+    onSuccess: () => refetch(),
+  });
+
+  const handleCheckboxChange = (
+    todoId: number,
+    checked: boolean | undefined
+  ) => {
+    updateTodoStatus.mutate({
+      todoId,
+      status: checked ? "completed" : "pending",
+    });
+  };
+
+  const handleDelete = (todoId: number) => {
+    deleteTodo.mutate({ id: todoId });
+  };
+
+  const sortedTodos = todos.slice().sort((a, b) => a.id - b.id);
 
   return (
-    <ul className="grid grid-cols-1 gap-y-3">
-      {todos.map((todo) => (
-        <li key={todo.id}>
-          <div className="flex items-center rounded-12 border border-gray-200 px-4 py-3 shadow-sm">
-            <Checkbox.Root
-              id={String(todo.id)}
-              className="flex h-6 w-6 items-center justify-center rounded-6 border border-gray-300 focus:border-gray-700 focus:outline-none data-[state=checked]:border-gray-700 data-[state=checked]:bg-gray-700"
-            >
-              <Checkbox.Indicator>
-                <CheckIcon className="h-4 w-4 text-white" />
-              </Checkbox.Indicator>
-            </Checkbox.Root>
+    <div>
+      <div className="mb-4">
+        <button
+          onClick={() => setFilter("all")}
+          className={`mr-2 rounded-[9999px] border px-4 py-2 ${
+            filter === "all"
+              ? "border-none bg-[#334155] text-white"
+              : "text-[#334155]"
+          } font-manrope border-[#E2E8F0] text-[14px] font-bold leading-[20px] transition duration-150 ease-in-out`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => setFilter("pending")}
+          className={`mr-2 rounded-[9999px] border px-4 py-2 ${
+            filter === "pending"
+              ? "border-none bg-[#334155] text-white"
+              : "text-[#334155]"
+          } font-manrope border-[#E2E8F0] text-[14px] font-bold leading-[20px] transition duration-150 ease-in-out`}
+        >
+          Pending
+        </button>
+        <button
+          onClick={() => setFilter("completed")}
+          className={`mr-2 rounded-[9999px] border px-4 py-2 ${
+            filter === "completed"
+              ? "border-none bg-[#334155] text-white"
+              : "text-[#334155]"
+          } font-manrope border-[#E2E8F0] text-[14px] font-bold leading-[20px] transition duration-150 ease-in-out`}
+        >
+          Completed
+        </button>
+      </div>
 
-            <label className="block pl-3 font-medium" htmlFor={String(todo.id)}>
-              {todo.body}
-            </label>
-          </div>
-        </li>
-      ))}
-    </ul>
-  )
-}
+      <ul ref={parent} className="grid grid-cols-1 gap-y-3">
+        {sortedTodos.map((todo) => (
+          <li key={todo.id}>
+            <div
+              className={`flex items-center rounded-12 border border-[#E2E8F0] px-4 py-3 shadow-sm ${
+                todo.status === "completed"
+                  ? "bg-[#F8FAFC] text-gray-500 line-through"
+                  : ""
+              }`}
+            >
+              <Checkbox.Root
+                id={String(todo.id)}
+                checked={todo.status === "completed"}
+                onCheckedChange={(checked: boolean) =>
+                  handleCheckboxChange(todo.id, checked)
+                }
+                className="flex h-6 w-6 items-center justify-center rounded-6 border border-gray-300 focus:border-gray-700 focus:outline-none data-[state=checked]:border-gray-700 data-[state=checked]:bg-gray-700"
+              >
+                <Checkbox.Indicator>
+                  <CheckIcon className="h-4 w-4 text-white" />
+                </Checkbox.Indicator>
+              </Checkbox.Root>
+
+              <label
+                className="font-inter block pl-3 text-[16px] font-[600] font-bold leading-[24px] text-[#334155]"
+                htmlFor={String(todo.id)}
+              >
+                {todo.body}
+              </label>
+
+              <button
+                onClick={() => handleDelete(todo.id)}
+                aria-label="Delete todo"
+                className="ml-auto rounded-[9999px] p-2 hover:bg-gray-200"
+              >
+                <XMarkIcon className="text-red-500 h-5 w-5" />
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 const XMarkIcon = (props: SVGProps<SVGSVGElement>) => {
   return (
@@ -108,8 +195,8 @@ const XMarkIcon = (props: SVGProps<SVGSVGElement>) => {
         d="M6 18L18 6M6 6l12 12"
       />
     </svg>
-  )
-}
+  );
+};
 
 const CheckIcon = (props: SVGProps<SVGSVGElement>) => {
   return (
@@ -127,5 +214,5 @@ const CheckIcon = (props: SVGProps<SVGSVGElement>) => {
         d="M4.5 12.75l6 6 9-13.5"
       />
     </svg>
-  )
-}
+  );
+};
